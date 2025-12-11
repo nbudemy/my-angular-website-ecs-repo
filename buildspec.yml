@@ -2,13 +2,12 @@ version: 0.2
 env:
   variables:
     ECR_REPO: angular-ecs
-  parameter-store:
-    DOCKERHUB_TOKEN: /dockerhub/token
-    DOCKERHUB_USER: /dockerhub/user
 phases:
   pre_build:
     commands:
-      - echo ${DOCKERHUB_TOKEN} | docker login -u ${DOCKERHUB_USER} --password-stdin
+        #ECR Public Gallery Login to reduce risk of pull throttling
+      - aws ecr-public get-login-password --region us-east-1 | docker login --username AWS --password-stdin public.ecr.aws
+        #ECR Private Login
       - ECR_MAIN_URI="${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com"
       - ECR_IMAGE_URI="${ECR_MAIN_URI}/${ECR_REPO}:${CODEBUILD_RESOLVED_SOURCE_VERSION:0:8}"
       - aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin ${ECR_MAIN_URI}
