@@ -9,7 +9,7 @@ phases:
   pre_build:
     commands:
       - echo ${DOCKERHUB_TOKEN} | docker login -u ${DOCKERHUB_USER} --password-stdin
-      - ECR_MAIN_URI="223798725213.dkr.ecr.${AWS_REGION}.amazonaws.com"
+      - ECR_MAIN_URI="${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com"
       - ECR_IMAGE_URI="${ECR_MAIN_URI}/${ECR_REPO}:latest"
       - aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin ${ECR_MAIN_URI}
 
@@ -20,3 +20,8 @@ phases:
     commands:
       - docker tag my-angular-app:latest ${ECR_IMAGE_URI}
       - docker push ${ECR_IMAGE_URI}
+      #Generate image definitions file
+      - printf '[{"name":"nbudemy-angular-website","imageUri":"%s"}]' ${ECR_IMAGE_URI} > imagedefinitions.json
+artifacts:
+  files:
+    - imagedefinitions.json
